@@ -80,12 +80,7 @@ const Signup = () => {
                   className="w-full p-4 bg-black text-white font-semibold rounded-full border-3 border-black hover:text-gray-800 hover:bg-white">
                   Sign Up
                 </button>
-                <button
-                  type="button"
-                  className="w-full p-4 bg-gray-200 flex justify-center items-center space-x-2 hover:bg-gray-300 rounded-full">
-                  <img src={GoogleSvg} alt="Google Logo" className="w-8 h-8" />
-                  <span>Sign Up with Google</span>
-                </button>
+              
               </div>
             </form>
           </div>

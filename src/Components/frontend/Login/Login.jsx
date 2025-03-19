@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext"; // Import useAuth hook
 import Logo from "../assets/logo.png";
@@ -10,9 +10,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useAuth(); // Use the login function from AuthContext
+  const { user, login } = useAuth(); // Use the login function from AuthContext
   const navigate = useNavigate();
 
+    // Redirect to Home page if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -80,12 +86,7 @@ const Login = () => {
                   className="w-full p-4 bg-black text-white font-semibold rounded-full border-3 border-black hover:text-gray-800 hover:bg-white">
                   Log In
                 </button>
-                <button
-                  type="button"
-                  className="w-full p-4 bg-gray-200 flex justify-center items-center space-x-2 hover:bg-gray-300 rounded-full">
-                  <img src={GoogleSvg} alt="Google Logo" className="w-8 h-8" />
-                  <span>Log In with Google</span>
-                </button>
+                
               </div>
             </form>
           </div>
