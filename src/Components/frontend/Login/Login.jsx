@@ -1,15 +1,29 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext"; // Import useAuth hook
 import Logo from "../assets/logo.png";
 import GoogleSvg from "../assets/icons8-google.svg";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 
-
-
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate(); 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login } = useAuth(); // Use the login function from AuthContext
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+      await login(trimmedEmail, trimmedPassword); // Pass trimmed values
+      navigate("/");
+    } catch (err) {
+      alert("Login failed. Please check your credentials.");
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -21,28 +35,33 @@ const Login = () => {
           <div className="text-center">
             <h2 className="text-3xl font-semibold mb-3">Welcome back!</h2>
             <p className="text-xl font-normal mb-8">Please enter your details</p>
-            <form className="w-full flex flex-col">
-
-              <input 
-                type="email" 
-                placeholder="Email" 
-                className="w-full p-4 mb-4 border-b border-black outline-none" 
+            <form className="w-full flex flex-col" onSubmit={handleLogin}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-4 mb-4 border-b border-black outline-none"
+                required
               />
               <div className="relative mb-4">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="Password" 
-                  className="w-full p-4 border-b border-black outline-none" 
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-4 border-b border-black outline-none"
+                  required
                 />
                 {showPassword ? (
-                  <FaEyeSlash 
+                  <FaEyeSlash
                     className="absolute right-3 top-5 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)} 
+                    onClick={() => setShowPassword(!showPassword)}
                   />
                 ) : (
-                  <FaEye 
+                  <FaEye
                     className="absolute right-3 top-5 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)} 
+                    onClick={() => setShowPassword(!showPassword)}
                   />
                 )}
               </div>
@@ -56,24 +75,16 @@ const Login = () => {
                 <a href="#" className="text-sm font-medium hover:underline ml-auto">Forgot password?</a>
               </div>
               <div className="flex flex-col space-y-4">
-                <button 
-                  type="button" 
+                <button
+                  type="submit"
                   className="w-full p-4 bg-black text-white font-semibold rounded-full border-3 border-black hover:text-gray-800 hover:bg-white">
                   Log In
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="w-full p-4 bg-gray-200 flex justify-center items-center space-x-2 hover:bg-gray-300 rounded-full">
                   <img src={GoogleSvg} alt="Google Logo" className="w-8 h-8" />
                   <span>Log In with Google</span>
-                </button>
-              </div>
-              <div className="mt-4">
-                <button 
-                  type="button" 
-                  className="w-full p-4 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600"
-                  onClick={() => navigate('/signup')}>
-                  Create a new account
                 </button>
               </div>
             </form>

@@ -7,12 +7,15 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const navigate = useNavigate(); // useNavigate must be used inside a Router
+  const navigate = useNavigate();
+
+  // Set the base URL for the backend
+  const backendUrl = 'http://localhost:8266';
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get('/api/auth/me');
+        const res = await axios.get(`${backendUrl}/api/auth/me`); // Updated URL
         setUser(res.data);
       } catch (err) {
         logout();
@@ -31,7 +34,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post(`${backendUrl}/api/auth/login`, { email, password }); // Updated URL
       setToken(res.data.token);
       navigate('/');
     } catch (err) {
@@ -41,7 +44,7 @@ export function AuthProvider({ children }) {
 
   const signup = async (name, email, password, role) => {
     try {
-      const res = await axios.post('/api/auth/signup', { name, email, password, role });
+      const res = await axios.post(`${backendUrl}/api/auth/signup`, { name, email, password, role }); // Updated URL
       setToken(res.data.token);
       navigate('/');
     } catch (err) {
