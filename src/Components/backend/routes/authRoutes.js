@@ -3,6 +3,7 @@ import { check, validationResult } from 'express-validator';
 import User from '../models/user.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const router = express.Router();
 router.post('/signup', [
   check('name', 'Name is required').not().isEmpty(),
   check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Password must be 6+ characters').isLength({ min: 6 })
+  check('password', 'Password must be 4+ characters').isLength({ min: 4 }) // Changed from 6 to 4
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -21,6 +22,7 @@ router.post('/signup', [
     
     if (user) return res.status(400).json({ msg: 'User already exists' });
     
+    // Store the password in plaintext (no hashing)
     user = new User({ name, email, password, role: role || 'reader' });
     await user.save();
 
@@ -49,7 +51,8 @@ router.post('/login', [
     
     if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
     
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Compare the provided password directly with the stored password (plaintext)
+    const isMatch = password === user.password;
     if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
     const payload = { user: { id: user.id, role: user.role } };
@@ -60,6 +63,21 @@ router.post('/login', [
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// Get Current User Route
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('followers', 'name profilePicture')
+      .populate('following', 'name profilePicture');
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 

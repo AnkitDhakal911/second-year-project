@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext"; // Import useAuth hook
 import Logo from "../assets/logo.png";
-import GoogleSvg from "../assets/icons8-google.svg";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 

@@ -3,9 +3,8 @@ dotenv.config();
 import express from 'express';
 import { connectDB } from './config/db.js';
 import cors from 'cors';
-import jwt from 'jsonwebtoken';
-import User from './models/user.js'; // Import the User model
-import { authMiddleware } from './middleware/auth.js'; 
+import authRoutes from './routes/authRoutes.js'; // Import auth routes
+import userRoutes from './routes/userRoutes.js'; // Import user routes
 
 const app = express();
 
@@ -20,89 +19,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-// @route   POST /api/auth/login
-// @desc    Login user
-// @access  Public
-app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  const trimmedEmail = email.trim();
-  const trimmedPassword = password.trim();
-
-  console.log('Login request received:', { email: trimmedEmail });  // Debug log
-
-  try {
-    // Check if user exists
-    const user = await User.findOne({ email: trimmedEmail });
-    if (!user) {
-      console.log('User not found:', trimmedEmail); // Debug log
-      return res.status(400).json({ msg: 'Invalid credentials' });
-    }
-
-     // Check password (direct comparison)
-     if (trimmedPassword !== user.password) {
-      console.log('Invalid password for user:', trimmedEmail); // Debug log
-      return res.status(400).json({ msg: 'Invalid credentials' });
-    }
-
-    // Generate JWT token
-    const payload = { user: { id: user.id, role: user.role } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    console.log('Login successful for user:', trimmedEmail); // Debug log
-    res.json({ token });
-  } catch (err) {
-    console.error('Login error:', err.message); // Debug log
-    res.status(500).send('Server error');
-  }
-});
-
-// @route   POST /api/auth/signup
-// @desc    Register user
-// @access  Public
-app.post('/api/auth/signup', async (req, res) => {
-  const { name, email, password } = req.body;
-  const trimmedEmail = email.trim();
-  const trimmedPassword = password.trim();
-
-  console.log('Signup request received:', { name, email: trimmedEmail }); // Debug log
-
-  try {
-    // Check if user already exists
-    let user = await User.findOne({ email: trimmedEmail });
-    if (user) {
-      console.log('User already exists:', trimmedEmail); // Debug log
-      return res.status(400).json({ msg: 'User already exists' });
-    }
-
-    // Create new user
-    user = new User({ name, email: trimmedEmail, password: trimmedPassword });
-
-
-    // Save user to database
-    await user.save();
-    console.log('User created successfully:', trimmedEmail); // Debug log
-
-    // Generate JWT token
-    const payload = { user: { id: user.id, role: user.role } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ token });
-  } catch (err) {
-    console.error('Signup error:', err.message); // Debug log
-    res.status(500).send('Server error');
-  }
-});
-
-// Add this after your existing routes
-app.get('/api/auth/me', authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+app.use('/api/auth', authRoutes); // Use auth routes
+app.use('/api/users', userRoutes);// Use user routes
 
 // Start the server
 const PORT = process.env.PORT || 8266;
