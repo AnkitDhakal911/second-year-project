@@ -1,3 +1,4 @@
+// Components/frontend/Context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -9,13 +10,12 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const navigate = useNavigate();
 
-  // Set the base URL for the backend
-  const backendUrl = 'http://localhost:8266';
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/api/auth/me`); // Updated URL
+        const res = await axios.get('http://localhost:8266/api/auth/me', {
+          headers: { 'x-auth-token': token },
+        });
         setUser(res.data);
       } catch (err) {
         logout();
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(`${backendUrl}/api/auth/login`, { email, password }); // Updated URL
+      const res = await axios.post('http://localhost:8266/api/auth/login', { email, password });
       setToken(res.data.token);
       navigate('/');
     } catch (err) {
@@ -42,9 +42,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const signup = async (name, email, password, role) => {
+  const signup = async (name, email, password) => {
     try {
-      const res = await axios.post(`${backendUrl}/api/auth/signup`, { name, email, password, role }); // Updated URL
+      const res = await axios.post('http://localhost:8266/api/auth/signup', { name, email, password });
       setToken(res.data.token);
       navigate('/');
     } catch (err) {

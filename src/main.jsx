@@ -14,27 +14,36 @@ import Categories from './Components/frontend/Categories/Categories.jsx'; // Cor
 import Tags from './Components/frontend/Tags/Tags.jsx'; // Correct path
 import Profile from './Components/frontend/Profile/Profile.jsx'; // Correct path
 import Admin from './Components/frontend/Admin/Admin.jsx'; // Correct path
+import ProtectedRoute from './Components/frontend/Context/ProtectedRoute';
 
 // Create the router
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <AuthProvider> {/* Move AuthProvider inside the RouterProvider */}
+      <AuthProvider>
         <App />
       </AuthProvider>
     ),
     children: [
-      { path: '', element: <Home /> },
-      { path: 'about', element: <About /> },
-      { path: 'contact', element: <Contact /> },
+      // Public routes (accessible without authentication)
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
-      { path: 'categories', element: <Categories /> },
-      { path: 'tags', element: <Tags /> },
-      { path: 'profile', element: <Profile /> },
-      { path: 'admin', element: <Admin /> },
-      { path: '/user/:userid', element: <User /> },
+
+      // Protected routes (require authentication)
+      {
+        element: <ProtectedRoute />, // Wrap protected routes with ProtectedRoute
+        children: [
+          { path: '', element: <Home /> },
+          { path: 'about', element: <About /> },
+          { path: 'contact', element: <Contact /> },
+          { path: 'categories', element: <Categories /> },
+          { path: 'tags', element: <Tags /> },
+          { path: 'profile', element: <Profile /> },
+          { path: 'admin', element: <Admin /> },
+          { path: '/user/:userid', element: <User /> },
+        ],
+      },
     ],
   },
 ]);

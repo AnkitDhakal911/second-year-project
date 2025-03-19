@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import User from './models/user.js'; // Import the User model
+import { authMiddleware } from './middleware/auth.js'; 
 
 const app = express();
 
@@ -89,6 +90,17 @@ app.post('/api/auth/signup', async (req, res) => {
   } catch (err) {
     console.error('Signup error:', err.message); // Debug log
     res.status(500).send('Server error');
+  }
+});
+
+// Add this after your existing routes
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
