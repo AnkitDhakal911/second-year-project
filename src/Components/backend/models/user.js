@@ -8,9 +8,8 @@ const userSchema = new mongoose.Schema({
   bio: { type: String, default: '' }, // User bio
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // List of follower IDs
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // List of following IDs
-  role: { type: String, enum: ['reader', 'editor', 'admin'], default: 'reader' },
-  createdAt: { type: Date, default: Date.now },
-});
+  role: { type: String, enum: ['reader', 'editor', 'admin'], default: 'editor' }, // Change default to 'editor'
+}, { timestamps: true }); // Add timestamps to automatically manage createdAt and updatedAt
 
 const User = mongoose.model('User', userSchema);
 

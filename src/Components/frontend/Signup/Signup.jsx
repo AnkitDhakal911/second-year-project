@@ -1,95 +1,87 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../Context/AuthContext"; // Import useAuth hook
-import Logo from "../assets/logo.png";
-import { FaEye, FaEyeSlash } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { signup } = useAuth(); // Use the signup function from AuthContext
+function Signup() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
 
-  const handleSignup = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
+    console.log('Form data being sent:', formData); // Debug log
     try {
-      const trimmedEmail = email.trim();
-      const trimmedPassword = password.trim();
-      await signup(name, trimmedEmail, trimmedPassword); // Pass trimmed values
-      navigate("/");
+      const response = await axios.post('http://localhost:8266/api/auth/signup', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('Signup response:', response.data); // Debug log
+      // Store the token in localStorage (since /api/auth/signup returns a token)
+      localStorage.setItem('token', response.data.token);
+      navigate('/login');
     } catch (err) {
-      alert("Signup failed. Please try again.");
+      console.error('Signup error:', err.response?.data); // Debug log
+      setError(err.response?.data?.msg || 'Error signing up');
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex flex-1 justify-center items-center bg-gray-200 p-5">
-        <div className="w-full max-w-xs flex flex-col items-center">
-          <div className="self-center pt-5 mb-5">
-            <img src={Logo} alt="Logo" className="w-16 h-16 mb-5" />
-          </div>
-          <div className="text-center w-full">
-            <h2 className="text-3xl font-semibold mb-3">Join Us!</h2>
-            <p className="text-xl font-normal mb-8">Create your account</p>
-            <form className="w-full flex flex-col" onSubmit={handleSignup}>
-              <input
-                type="text"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-4 mb-4 border-b border-black outline-none"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 mb-4 border-b border-black outline-none"
-                required
-              />
-              <div className="relative mb-4">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 border-b border-black outline-none"
-                  required
-                />
-                {showPassword ? (
-                  <FaEyeSlash
-                    className="absolute right-3 top-5 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  />
-                ) : (
-                  <FaEye
-                    className="absolute right-3 top-5 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  />
-                )}
-              </div>
-              <div className="flex flex-col space-y-4">
-                <button
-                  type="submit"
-                  className="w-full p-4 bg-black text-white font-semibold rounded-full border-3 border-black hover:text-gray-800 hover:bg-white">
-                  Sign Up
-                </button>
-              
-              </div>
-            </form>
-          </div>
-          <p className="text-center text-sm font-medium mt-8">
-            Already have an account? <Link to="/login" className="hover:underline">Log In</Link>
-          </p>
+    <div className="p-8 max-w-md mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Sign Up</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block font-medium">Name:</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
         </div>
-      </div>
+        <div>
+          <label className="block font-medium">Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-orange-700 text-white py-2 px-4 rounded hover:bg-orange-800"
+        >
+          Sign Up
+        </button>
+      </form>
     </div>
   );
-};
+}
 
 export default Signup;

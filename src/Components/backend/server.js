@@ -5,6 +5,9 @@ import { connectDB } from './config/db.js';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js'; // Import auth routes
 import userRoutes from './routes/userRoutes.js'; // Import user routes
+import postRoutes from './routes/postRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js'; 
+import tagRoutes from './routes/tagRoutes.js';
 
 const app = express();
 
@@ -19,8 +22,11 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes); // Use auth routes
-app.use('/api/users', userRoutes);// Use user routes
+app.use('/api/auth', authRoutes); 
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/categories', categoryRoutes); 
+app.use('/api/tags', tagRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8266;

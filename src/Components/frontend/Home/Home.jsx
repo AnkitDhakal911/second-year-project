@@ -1,53 +1,96 @@
-import React from 'react';
-import Logo from '../assets/logo.png';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import axios from 'axios';
 
 function Home() {
-  return (
-    <div className="flex justify-between">
-      {/* Main Feed */}
-      <main className="w-3/5 p-4">
-        <section className="mb-6">
-          <h2 className="text-3xl font-bold mb-4">Latest Posts</h2>
-          {/* Dummy Blog Post */}
-          <div className="border p-4 rounded mb-4">
-            <h3 className="text-xl font-semibold mb-2">Blog Post Title</h3>
-            <p className="text-gray-700 mb-2">This is a brief description of the blog post. It gives a quick overview of the content...</p>
-            <div className="flex items-center justify-between text-gray-500">
-              <span>Author: Ankit Dhakal</span>
-              <div className="flex space-x-2">
-                <button>Like</button>
-                <button>Comment</button>
-                <button>Share</button>
-              </div>
-            </div>
-          </div>
-          {/* Additional blog posts can be added here */}
-        </section>
-      </main>
+  const { user, token, logout } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState('');
 
-      {/* Right Sidebar */}
-      <aside className="w-2/5 p-4 bg-gray-100">
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-4">What's Trending</h2>
-          <ul>
-            <li className="mb-2">#TrendingTopic1</li>
-            <li className="mb-2">#TrendingTopic2</li>
-            <li className="mb-2">#TrendingTopic3</li>
-          </ul>
-        </section>
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-4">Who to Follow</h2>
-          <ul>
-            <li className="mb-2">User1</li>
-            <li className="mb-2">User2</li>
-            <li className="mb-2">User3</li>
-          </ul>
-        </section>
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-4">Subscribe to Premium</h2>
-          <button className="bg-blue-500 text-white py-2 px-4 rounded">Subscribe</button>
-        </section>
-      </aside>
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get('http://localhost:8266/api/posts');
+        setPosts(res.data);
+      } catch (err) {
+        console.error('Error fetching posts:', err.response?.data || err.message);
+        if (err.response?.status === 401) {
+          logout();
+          window.location.href = '/login';
+          return;
+        }
+        setError('Error fetching posts');
+      }
+    };
+    fetchPosts();
+  }, [logout]);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8266/api/posts/${id}`, {
+        headers: { 'x-auth-token': token },
+      });
+      setPosts(posts.filter(post => post._id !== id));
+    } catch (err) {
+      if (err.response?.status === 401) {
+        logout();
+        window.location.href = '/login';
+        return;
+      }
+      setError(err.response?.data?.msg || 'Error deleting post');
+    }
+  };
+
+  return (
+    <div className="p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Blog Posts</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {user && (
+        <Link
+          to="/create-post"
+          className="bg-orange-700 text-white py-2 px-4 rounded hover:bg-orange-800 mb-4 inline-block"
+        >
+          Create New Post
+        </Link>
+      )}
+      {posts.length === 0 ? (
+        <p>No posts available.</p>
+      ) : (
+        posts.map(post => {
+          const canEdit = user && (post.authorId._id === user.id || user.role === 'admin');
+          return (
+            <div key={post._id} className="mb-6 p-4 border rounded">
+              <h2 className="text-2xl font-semibold">
+                <Link to={`/posts/${post._id}`} className="text-orange-700 hover:underline">
+                  {post.title}
+                </Link>
+              </h2>
+              <p className="text-gray-700">{post.content.substring(0, 100)}...</p>
+              <p><strong>Author:</strong> {post.authorId.name}</p>
+              <p><strong>Category:</strong> {post.categoryId.categoryName}</p>
+              <p><strong>Tags:</strong> {post.tags.map(tag => tag.tagName).join(', ')}</p>
+              <p><strong>Created:</strong> {new Date(post.createdDate).toLocaleDateString()}</p>
+              {canEdit && (
+                <div className="mt-2">
+                  <Link
+                    to={`/posts/${post._id}`}
+                    className="text-orange-700 hover:underline mr-4"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(post._id)}
+                    className="text-red-700 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }

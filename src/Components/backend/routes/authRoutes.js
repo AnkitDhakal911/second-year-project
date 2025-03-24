@@ -1,7 +1,6 @@
 import express from 'express';
 import { check, validationResult } from 'express-validator';
 import User from '../models/user.js';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { authMiddleware } from '../middleware/auth.js';
 
@@ -11,19 +10,21 @@ const router = express.Router();
 router.post('/signup', [
   check('name', 'Name is required').not().isEmpty(),
   check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Password must be 4+ characters').isLength({ min: 4 }) // Changed from 6 to 4
+  check('password', 'Password must be 4+ characters').isLength({ min: 4 })
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
+    console.log('Hit /api/auth/signup'); // Debug log
     const { name, email, password, role } = req.body;
     let user = await User.findOne({ email });
     
     if (user) return res.status(400).json({ msg: 'User already exists' });
     
     // Store the password in plaintext (no hashing)
-    user = new User({ name, email, password, role: role || 'reader' });
+    user = new User({ name, email, password, role: role || 'editor' });
+    console.log('Creating user with role (authRoutes):', user.role); // Debug log
     await user.save();
 
     const payload = { user: { id: user.id, role: user.role } };
