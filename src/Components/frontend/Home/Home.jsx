@@ -12,7 +12,8 @@ function Home() {
     const fetchPosts = async () => {
       try {
         const res = await axios.get('http://localhost:8266/api/posts');
-        setPosts(res.data);
+        console.log('Fetched posts:', res.data); // Debug: Log the API response
+        setPosts(Array.isArray(res.data) ? res.data : []); // Ensure posts is an array
       } catch (err) {
         console.error('Error fetching posts:', err.response?.data || err.message);
         if (err.response?.status === 401) {
@@ -58,7 +59,8 @@ function Home() {
         <p>No posts available.</p>
       ) : (
         posts.map(post => {
-          const canEdit = user && (post.authorId._id === user.id || user.role === 'admin');
+          // Check if post.authorId exists before accessing its properties
+          const canEdit = user && post.authorId && (post.authorId._id === user.id || user.role === 'admin');
           return (
             <div key={post._id} className="mb-6 p-4 border rounded">
               <h2 className="text-2xl font-semibold">
@@ -67,9 +69,9 @@ function Home() {
                 </Link>
               </h2>
               <p className="text-gray-700">{post.content.substring(0, 100)}...</p>
-              <p><strong>Author:</strong> {post.authorId.name}</p>
-              <p><strong>Category:</strong> {post.categoryId.categoryName}</p>
-              <p><strong>Tags:</strong> {post.tags.map(tag => tag.tagName).join(', ')}</p>
+              <p><strong>Author:</strong> {post.authorId ? post.authorId.name : 'Unknown'}</p>
+              <p><strong>Category:</strong> {post.categoryId ? post.categoryId.categoryName : 'Uncategorized'}</p>
+              <p><strong>Tags:</strong> {post.tags && Array.isArray(post.tags) ? post.tags.map(tag => tag.tagName).join(', ') : 'No tags'}</p>
               <p><strong>Created:</strong> {new Date(post.createdDate).toLocaleDateString()}</p>
               {canEdit && (
                 <div className="mt-2">
