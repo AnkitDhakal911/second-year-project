@@ -10,8 +10,6 @@ import Contact from './Components/frontend/Contact/Contact.jsx';
 import Login from './Components/frontend/Login/Login.jsx';
 import Signup from './Components/frontend/Signup/Signup.jsx';
 import User from './Components/frontend/User/User.jsx';
-import Categories from './Components/frontend/Categories/Categories.jsx';
-import Tags from './Components/frontend/Tags/Tags.jsx';
 import Profile from './Components/frontend/Profile/Profile.jsx';
 import Admin from './Components/frontend/Admin/Admin.jsx';
 import ProtectedRoute from './Components/frontend/Context/ProtectedRoute';
@@ -36,8 +34,6 @@ const router = createBrowserRouter([
           { path: '', element: <Home /> },
           { path: 'about', element: <About /> },
           { path: 'contact', element: <Contact /> },
-          { path: 'categories', element: <Categories /> },
-          { path: 'tags', element: <Tags /> },
           { path: 'profile', element: <Profile /> },
           { path: 'user/:userid', element: <User /> },
           { path: 'search', element: <Search /> },
