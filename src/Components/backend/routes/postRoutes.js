@@ -1,4 +1,3 @@
-// src/backend/routes/postRoutes.js
 import express from 'express';
 import Post from '../models/post.js';
 import { authMiddleware, isAdmin } from '../middleware/auth.js';
@@ -38,7 +37,20 @@ router.get('/', async (req, res) => {
       .populate('categoryId', 'categoryName')
       .populate('tags', 'tagName')
       .populate('comments.userId', 'name profilePicture');
-    const validPosts = posts.filter(post => post.authorId);
+    
+    // Add debugging logs
+    console.log('Fetched posts:', posts);
+    const validPosts = posts.filter(post => {
+      if (!post.authorId) {
+        console.log('Post with missing authorId:', post);
+        return false;
+      }
+      if (!post.authorId.profilePicture) {
+        console.log('Author missing profilePicture:', post.authorId);
+      }
+      return true;
+    });
+    
     res.json(validPosts);
   } catch (err) {
     console.error('Error fetching posts:', err);
@@ -84,7 +96,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       .populate('comments.userId', 'name profilePicture');
     res.json(updatedPost);
   } catch (err) {
-    res.status(400).json({ msg: err.message });
+    res.status(400).json({ msg: 'Error updating post', error: err.message });
   }
 });
 
@@ -101,7 +113,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     await Post.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Post deleted' });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    res.status(500).json({ msg: 'Error deleting post', error: err.message });
   }
 });
 

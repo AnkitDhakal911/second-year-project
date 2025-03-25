@@ -1,13 +1,15 @@
+// src/backend/server.js
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import { connectDB } from './config/db.js';
 import cors from 'cors';
-import authRoutes from './routes/authRoutes.js'; // Import auth routes
-import userRoutes from './routes/userRoutes.js'; // Import user routes
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js'; 
+import categoryRoutes from './routes/categoryRoutes.js';
 import tagRoutes from './routes/tagRoutes.js';
+import path from 'path'; // Import path for handling file paths
 
 const app = express();
 
@@ -21,11 +23,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve the uploads folder statically
+app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
+
 // Routes
-app.use('/api/auth', authRoutes); 
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/categories', categoryRoutes); 
+app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 
 // Start the server
