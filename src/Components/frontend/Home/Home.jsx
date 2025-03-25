@@ -198,19 +198,21 @@ function Home() {
                 className="bg-white rounded-xl shadow-lg p-6 mb-6 hover:shadow-xl transition-all duration-300"
               >
                 <div className="flex items-center space-x-4 mb-4">
-                  <img
-                    src={
-                      post.authorId?.profilePicture
-                        ? `${BACKEND_URL}${post.authorId.profilePicture}`
-                        : '/default-profile.png'
-                    }
-                    alt={post.authorId?.name || 'Unknown'}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-teal-300"
-                    onError={(e) => {
-                      console.log('Error loading author profile picture:', e);
-                      e.target.src = '/default-profile.png';
-                    }}
-                  />
+                  <Link to={`/user/${authorId}`}>
+                    <img
+                      src={
+                        post.authorId?.profilePicture
+                          ? `${BACKEND_URL}${post.authorId.profilePicture}`
+                          : '/default-profile.png'
+                      }
+                      alt={post.authorId?.name || 'Unknown'}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-teal-300"
+                      onError={(e) => {
+                        console.log('Error loading author profile picture:', e);
+                        e.target.src = '/default-profile.png';
+                      }}
+                    />
+                  </Link>
                   <div>
                     <h2 className="text-xl font-semibold text-gray-800">
                       <Link
@@ -221,20 +223,21 @@ function Home() {
                       </Link>
                     </h2>
                     <p className="text-sm text-gray-500">
-                      By {post.authorId?.name || 'Unknown Author'} •{' '}
-                      {new Date(post.createdDate).toLocaleDateString()}
+                      By{' '}
+                      <Link
+                        to={`/user/${authorId}`}
+                        className="text-teal-600 hover:underline"
+                      >
+                        {post.authorId?.name || 'Unknown Author'}
+                      </Link>{' '}
+                      • {new Date(post.createdDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <p className="text-gray-700 mb-4">
-                  {post.content.substring(0, 100)}...
-                  <Link
-                    to={`/post/${post._id}`}
-                    className="text-teal-500 hover:text-teal-700 transition-colors duration-200 ml-1"
-                  >
-                    Read more
-                  </Link>
-                </p>
+                {/* Display full post content */}
+                <div className="prose prose-lg max-w-none text-gray-700 mb-4">
+                  <p>{post.content}</p>
+                </div>
                 <div className="text-sm text-gray-600 mb-4">
                   <p>
                     <span className="font-semibold text-teal-600">Category:</span>{' '}

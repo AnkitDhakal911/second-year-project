@@ -35,15 +35,21 @@ function Profile() {
     hover: { scale: 1.05, transition: { duration: 0.3 } },
   };
 
-  // Animation for buttons
+  // Animation for buttons and cards
   const buttonVariants = {
     rest: { scale: 1 },
     hover: { scale: 1.05, transition: { duration: 0.3 } },
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   // Keep profilePicturePreview in sync with user.profilePicture
   useEffect(() => {
     if (user?.profilePicture && !profilePictureFile) {
+      console.log('User profile picture:', user.profilePicture); // Debug log
       setProfilePicturePreview(user.profilePicture);
     }
   }, [user?.profilePicture, profilePictureFile]);
@@ -103,7 +109,11 @@ function Profile() {
   };
 
   if (loading) {
-    return <div className="p-8 text-gray-600">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
   }
 
   if (!user) {
@@ -253,7 +263,7 @@ function Profile() {
           <div className="absolute inset-0 bg-opacity-20 bg-black"></div>
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-md">
-              Your Profile
+              {user.name}'s Profile
             </h1>
             <p className="text-lg md:text-xl text-gray-100 max-w-2xl mx-auto">
               Manage your profile, connect with others, and share your story with the world.
@@ -299,6 +309,7 @@ function Profile() {
                   className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 shadow-md"
                   onError={(e) => {
                     console.log('Error loading profile picture:', e);
+                    console.log('Attempted URL:', profilePicturePreview);
                     e.target.src = '/default-profile.png';
                   }}
                 />
@@ -333,7 +344,7 @@ function Profile() {
               </motion.div>
               <div className="mt-6 text-center">
                 <p className="text-lg font-semibold text-gray-800">
-                  <span className="text-teal-600">Name:</span> {user.name}
+                  <span className="text-teal-600 font-semibold">Name:</span> {user.name}
                 </p>
                 <p className="text-gray-600">
                   <span className="text-teal-600 font-semibold">Email:</span> {user.email}
@@ -352,56 +363,156 @@ function Profile() {
                 </p>
               </div>
             </div>
+
             {/* Followers List */}
-            <div className="mt-8">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={sectionVariants}
+              className="mt-8 bg-gray-50 rounded-lg p-6 shadow-sm"
+            >
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Followers</h2>
-              <ul className="list-disc pl-5 text-gray-600">
-                {Array.isArray(user.followers) && user.followers.length > 0 ? (
-                  user.followers.map((follower) => (
+              {Array.isArray(user.followers) && user.followers.length > 0 ? (
+                <ul className="space-y-4">
+                  {user.followers.map((follower) => (
                     <motion.li
                       key={follower._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex items-center gap-3"
                     >
+                      <img
+                        src={
+                          follower.profilePicture
+                            ? `${BACKEND_URL}${follower.profilePicture}`
+                            : '/default-profile.png'
+                        }
+                        alt={follower.name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-teal-300"
+                        onError={(e) => {
+                          console.log('Error loading follower profile picture:', e);
+                          e.target.src = '/default-profile.png';
+                        }}
+                      />
                       <Link
                         to={`/user/${follower._id}`}
-                        className="text-teal-500 hover:text-teal-700 transition-colors duration-200"
+                        className="text-teal-600 font-medium hover:underline transition-colors duration-200"
                       >
                         {follower.name}
                       </Link>
                     </motion.li>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No followers yet</p>
-                )}
-              </ul>
-            </div>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-600 text-center">No followers yet</p>
+              )}
+            </motion.div>
+
             {/* Following List */}
-            <div className="mt-6">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={sectionVariants}
+              className="mt-6 bg-gray-50 rounded-lg p-6 shadow-sm"
+            >
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Following</h2>
-              <ul className="list-disc pl-5 text-gray-600">
-                {user.following && user.following.length > 0 ? (
-                  user.following.map((following) => (
+              {user.following && user.following.length > 0 ? (
+                <ul className="space-y-4">
+                  {user.following.map((following) => (
                     <motion.li
                       key={following._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex items-center gap-3"
                     >
+                      <img
+                        src={
+                          following.profilePicture
+                            ? `${BACKEND_URL}${following.profilePicture}`
+                            : '/default-profile.png'
+                        }
+                        alt={following.name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-teal-300"
+                        onError={(e) => {
+                          console.log('Error loading following profile picture:', e);
+                          e.target.src = '/default-profile.png';
+                        }}
+                      />
                       <Link
                         to={`/user/${following._id}`}
-                        className="text-teal-500 hover:text-teal-700 transition-colors duration-200"
+                        className="text-teal-600 font-medium hover:underline transition-colors duration-200"
                       >
                         {following.name}
                       </Link>
                     </motion.li>
-                  ))
-                ) : (
-                  <p className="text-gray-500">Not following anyone</p>
-                )}
-              </ul>
-            </div>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-600 text-center">Not following anyone</p>
+              )}
+            </motion.div>
+          </motion.div>
+
+          {/* Edit Form and Who to Follow */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={sectionVariants}
+            className="bg-white rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-xl"
+          >
+            {/* Edit Form */}
+            <form onSubmit={handleSubmit} className="space-y-6 mb-8">
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Name:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                />
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Bio:</label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                  rows="4"
+                />
+              </div>
+              {profilePictureFile && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="mt-4"
+                >
+                  <p className="text-sm text-gray-600 mb-2">Selected Image Preview:</p>
+                  <img
+                    src={profilePicturePreview}
+                    alt="Profile Preview"
+                    className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-teal-300 shadow-sm"
+                  />
+                </motion.div>
+              )}
+              <motion.button
+                type="submit"
+                disabled={isUploading}
+                variants={buttonVariants}
+                initial="rest"
+                whileHover="hover"
+                className={`w-full bg-teal-500 text-white py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all duration-200 shadow-md ${
+                  isUploading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isUploading ? 'Uploading...' : 'Update Profile'}
+              </motion.button>
+            </form>
+
             {/* Who to Follow Section */}
             <div className="mt-8">
               <div className="flex items-center justify-between mb-4">
@@ -414,7 +525,7 @@ function Profile() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search users..."
-                        className="py-2 px-4 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all duration-200"
+                        className="py-2 px-4 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 shadow-sm"
                         autoFocus
                       />
                       <motion.button
@@ -422,7 +533,7 @@ function Profile() {
                         variants={buttonVariants}
                         initial="rest"
                         whileHover="hover"
-                        className="bg-teal-500 text-white py-2 px-4 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all duration-200"
+                        className="bg-blue-500 text-white py-2 px-4 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 shadow-md"
                       >
                         <svg
                           className="w-5 h-5"
@@ -457,7 +568,7 @@ function Profile() {
                       variants={buttonVariants}
                       initial="rest"
                       whileHover="hover"
-                      className="bg-teal-500 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all duration-200"
+                      className="bg-blue-500 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-200 shadow-md"
                     >
                       <svg
                         className="w-5 h-5"
@@ -482,9 +593,9 @@ function Profile() {
                   (isSearching ? searchResults : suggestions).map((suggestedUser) => (
                     <motion.li
                       key={suggestedUser._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5 }}
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
                       className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <div className="flex items-center gap-3">
@@ -496,11 +607,14 @@ function Profile() {
                           }
                           alt={suggestedUser.name}
                           className="w-10 h-10 rounded-full object-cover border-2 border-teal-300"
-                          onError={(e) => (e.target.src = '/default-profile.png')}
+                          onError={(e) => {
+                            console.log('Error loading suggested user profile picture:', e);
+                            e.target.src = '/default-profile.png';
+                          }}
                         />
                         <Link
                           to={`/user/${suggestedUser._id}`}
-                          className="text-teal-500 hover:text-teal-700 font-medium transition-colors duration-200"
+                          className="text-teal-600 font-medium hover:underline transition-colors duration-200"
                         >
                           {suggestedUser.name}
                         </Link>
@@ -527,70 +641,12 @@ function Profile() {
                     </motion.li>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center">
+                  <p className="text-gray-600 text-center">
                     {isSearching ? 'No users found' : 'No suggestions available'}
                   </p>
                 )}
               </ul>
             </div>
-          </motion.div>
-
-          {/* Edit Form */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={sectionVariants}
-            className="bg-white rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-xl"
-          >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block font-medium text-gray-700 mb-2">Name:</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-transparent transition-all duration-200 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block font-medium text-gray-700 mb-2">Bio:</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-transparent transition-all duration-200 shadow-sm"
-                  rows="4"
-                />
-              </div>
-              {profilePictureFile && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="mt-4"
-                >
-                  <p className="text-sm text-gray-600 mb-2">Selected Image Preview:</p>
-                  <img
-                    src={profilePicturePreview}
-                    alt="Profile Preview"
-                    className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-teal-300 shadow-sm"
-                  />
-                </motion.div>
-              )}
-              <motion.button
-                type="submit"
-                disabled={isUploading}
-                variants={buttonVariants}
-                initial="rest"
-                whileHover="hover"
-                className={`w-full bg-teal-500 text-white py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all duration-200 shadow-md ${
-                  isUploading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isUploading ? 'Uploading...' : 'Update Profile'}
-              </motion.button>
-            </form>
           </motion.div>
         </div>
       </div>

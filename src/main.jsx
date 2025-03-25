@@ -17,6 +17,9 @@ import Search from './Components/frontend/Search/Search.jsx';
 import CreatePost from './Components/frontend/Post/CreatePost.jsx';
 import Post from './Components/frontend/Post/Post.jsx';
 
+
+
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -37,6 +40,7 @@ const router = createBrowserRouter([
           { path: 'profile', element: <Profile /> },
           { path: 'user/:userid', element: <User /> },
           { path: 'search', element: <Search /> },
+          
           { path: 'create-post', element: <CreatePost /> },
           { path: 'post/:id', element: <Post /> },
           {

@@ -2,8 +2,8 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import User from '../models/user.js';
-import multer from 'multer'; // Import multer for file uploads
-import path from 'path'; // Import path for handling file extensions
+import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 
@@ -59,7 +59,8 @@ router.put('/:id', authMiddleware, upload.single('profilePicture'), async (req, 
       req.params.id,
       updatedData,
       { new: true }
-    ).populate('followers', 'name profilePicture')
+    )
+      .populate('followers', 'name profilePicture')
       .populate('following', 'name profilePicture');
 
     res.json(updatedUser);
@@ -164,6 +165,24 @@ router.post('/unfollow/:userId', authMiddleware, async (req, res) => {
     await userToUnfollow.save();
 
     res.json({ msg: 'User unfollowed successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Check if the logged-in user is following the target user
+router.get('/isFollowing/:userId', authMiddleware, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const targetUser = await User.findById(req.params.userId);
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    const isFollowing = currentUser.following.some(
+      (id) => id.toString() === targetUser._id.toString()
+    );
+    res.json({ isFollowing });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
